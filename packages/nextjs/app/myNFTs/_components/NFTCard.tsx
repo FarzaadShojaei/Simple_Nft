@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Collectible } from "./MyHoldings";
 import { Address, AddressInput } from "~~/components/scaffold-eth";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
 
 export const NFTCard = ({ nft }: { nft: Collectible }) => {
   const [transferToAddress, setTransferToAddress] = useState("");
@@ -47,13 +48,29 @@ export const NFTCard = ({ nft }: { nft: Collectible }) => {
           <button
             className="btn btn-secondary btn-md px-8 tracking-wide"
             onClick={() => {
+              if (!transferToAddress || transferToAddress.trim() === "") {
+                notification.error("Please enter a valid address");
+                return;
+              }
+
+              if (!/^0x[a-fA-F0-9]{40}$/.test(transferToAddress)) {
+                notification.error("Please enter a valid Ethereum address");
+                return;
+              }
+
+              if (transferToAddress.toLowerCase() === nft.owner.toLowerCase()) {
+                notification.error("Cannot transfer to the same address");
+                return;
+              }
+
               try {
                 writeContractAsync({
                   functionName: "transferFrom",
                   args: [nft.owner, transferToAddress, BigInt(nft.id.toString())],
                 });
               } catch (err) {
-                console.error("Error calling transferFrom function");
+                console.error("Error calling transferFrom function:", err);
+                notification.error("Failed to transfer NFT");
               }
             }}
           >

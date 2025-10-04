@@ -58,9 +58,9 @@ export const MyHoldings = () => {
             ...nftMetadata,
           });
         } catch (e) {
+          console.error("Error fetching collectible:", e);
           notification.error("Error fetching all collectibles");
           setAllCollectiblesLoading(false);
-          console.log(e);
         }
       }
       collectibleUpdate.sort((a, b) => a.id - b.id);
